@@ -155,8 +155,23 @@ function formcheck(element){
   var login = element.elements["login"];
 
   if(username.value!="" && pass.value!=""){//os dois campos nao estao vazios
-    alert("Login para o Portal Acadêmico efetuado com sucesso!");
-    return true;
+    //alert("Login para o Portal Acadêmico efetuado com sucesso!");
+    fetch('http://demo9431901.mockable.io/login', {
+      method: 'post'
+    }).then(responseStream => responseStream.json()).then(data => {
+      console.log("Mensagem de Login:", data.msg);
+      alert(data.msg);
+      username.value = "";
+      pass.value = "";
+      window.location.reload();//erro estranho, se retornar true o fetch e interrompido, resulta em catch
+    }).catch(error => {
+      console.log(error);
+      alert("Ocorreu um erro de rede.");
+      username.value = "";
+      pass.value = "";
+      window.location.reload();
+    });
+    return false;//previne a interrupcao do fetch por causa do recarregamento da pagina
   }
 
   if(username.value=="")
@@ -180,3 +195,35 @@ function formrestore(element){
 
   console.log("Estilo na form Restaurado!");
 }
+
+function getNews(elem, index){
+  fetch('http://demo9431901.mockable.io/news/'+index, {
+      method: 'get',
+    }).then(responseStream => responseStream.json()).then(data => {
+      console.log("Noticia "+index+":", data.msg);
+      elem.textContent = data.msg;
+    }).catch(err => {
+      console.log(err);
+    });
+}
+
+function infoRodape(){
+  rodape = document.getElementById("rodape");
+  fetch('http://demo9431901.mockable.io/info', {
+      method: 'post',
+      body: JSON.stringify({"num": 1})
+    }).then(responseStream => responseStream.json()).then(data => {
+      console.log("Autores: ", data.autores);
+      console.log("Ano: ", data.ano);
+      rodape.textContent += data.ano;
+    }).catch(err => {
+      console.log(err);
+    });
+}
+
+//Quando a pagina carregar...
+window.addEventListener('load', function(){
+  infoRodape();
+  getNews(document.getElementById("news1"), 1);
+  getNews(document.getElementById("news2"), 2);
+});
